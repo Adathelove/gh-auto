@@ -45,6 +45,33 @@ if [[ ":$PATH:" != *":$GH_AUTO_BIN:"* ]]; then
   echo "[Info] Added $GH_AUTO_BIN to PATH for current session."
 fi
 
+# Check for fzf (required by gh-list)
+if ! command -v fzf >/dev/null 2>&1; then
+  OS="$(uname -s)"
+  case "$OS" in
+    Darwin)
+      echo "[Info] fzf not found. Installing via Homebrew..."
+      if command -v brew >/dev/null 2>&1; then
+        brew install fzf
+        echo "[Info] fzf installed successfully."
+      else
+        echo "[Warn] Homebrew not found. Please install fzf manually for gh-list to work." >&2
+      fi
+      ;;
+    Linux)
+      echo "[Warn] fzf not found. Please install fzf for gh-list to work:" >&2
+      echo "       - Debian/Ubuntu: sudo apt install fzf" >&2
+      echo "       - Fedora/RHEL: sudo dnf install fzf" >&2
+      echo "       - Arch: sudo pacman -S fzf" >&2
+      ;;
+    *)
+      echo "[Warn] fzf not found. Please install fzf manually for gh-list to work." >&2
+      ;;
+  esac
+else
+  echo "[Info] fzf already installed."
+fi
+
 # Ensure profile sources gh-env.sh
 if ! grep -F "$ENV_LINE" "$TARGET_PROFILE" >/dev/null 2>&1; then
   echo "" >> "$TARGET_PROFILE"

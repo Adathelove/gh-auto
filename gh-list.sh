@@ -1,33 +1,16 @@
 #!/usr/bin/env bash
 # gh-list.sh — list GitHub repos for an owner and clone/pull via fzf.
 # Usage: gh-list.sh [--owner OWNER]
-# Owner resolution order: --owner | current path ~/repos/git/<owner>/ | git config --global github.user | gh auth user
+# Owner defaults to "Adathelove" but can be overridden with --owner
 set -euo pipefail
 
-owner=""
+owner="Adathelove"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --owner) owner="${2:-}"; shift 2;;
     *) echo "[Warn] Unknown arg $1" >&2; shift;;
   esac
 done
-
-# Detect owner
-if [[ -z "$owner" ]]; then
-  if [[ "$PWD" =~ /repos/git/([^/]+)/ ]]; then
-    owner="${BASH_REMATCH[1]}"
-  fi
-fi
-if [[ -z "$owner" ]]; then
-  owner="$(git config --global github.user 2>/dev/null || true)"
-fi
-if [[ -z "$owner" ]]; then
-  owner="$(gh auth status 2>/dev/null | awk '/github.com as/{print $NF; exit}')"
-fi
-if [[ -z "$owner" ]]; then
-  echo "[Fail] Could not determine owner; use --owner." >&2
-  exit 1
-fi
 
 echo "[Info] Using owner: $owner"
 
@@ -51,8 +34,8 @@ if [[ -d "$dest/.git" ]]; then
   echo "[Info] Repo exists; pulling latest..."
   git -C "$dest" pull --ff-only
 else
-  echo "[Info] Cloning $url -> $dest"
-  git clone "$url" "$dest"
+  echo "[Info] Cloning $owner/$repo -> $dest"
+  gh repo clone "$owner/$repo" "$dest"
 fi
 
 echo "[Done] $repo at $dest"
