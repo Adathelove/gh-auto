@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gh-installer.sh — ensure gh-auto scripts are on PATH and gh-env.sh is sourced from shell profile.
+# gh-installer.sh — ensure gh-auto lives at the standard path, is on PATH, and env/completions are sourced.
 set -euo pipefail
 
 TARGET_PROFILE="${TARGET_PROFILE:-$HOME/.bash_profile}"
@@ -7,13 +7,30 @@ if [[ -n "${ZSH_VERSION:-}" ]]; then
   TARGET_PROFILE="$HOME/.zshrc"
 fi
 
-GH_AUTO_ROOT="${GH_AUTO_ROOT:-$HOME/repos/git/adathelove/gh-auto}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CURRENT_ROOT="$SCRIPT_DIR"
+DESIRED_ROOT="$HOME/repos/git/adathelove/gh-auto"
+GH_AUTO_ROOT="${GH_AUTO_ROOT:-$DESIRED_ROOT}"
 GH_AUTO_BIN="$GH_AUTO_ROOT"
 ENV_LINE="source $GH_AUTO_ROOT/gh-env.sh"
 
-if [[ ! -d "$GH_AUTO_ROOT" ]]; then
-  echo "[Fail] gh-auto root not found at $GH_AUTO_ROOT" >&2
-  exit 1
+# Move current clone into the standard location if needed
+if [[ "$CURRENT_ROOT" != "$DESIRED_ROOT" ]]; then
+  echo "[Warn] gh-auto currently at $CURRENT_ROOT but desired path is $DESIRED_ROOT"
+  read -rp "Move gh-auto to $DESIRED_ROOT? [y/N]: " mv_ans
+  if [[ "$mv_ans" =~ ^[Yy]$ ]]; then
+    mkdir -p "$(dirname "$DESIRED_ROOT")"
+    mv -v "$CURRENT_ROOT" "$DESIRED_ROOT"
+    GH_AUTO_ROOT="$DESIRED_ROOT"
+    GH_AUTO_BIN="$GH_AUTO_ROOT"
+    ENV_LINE="source $GH_AUTO_ROOT/gh-env.sh"
+    echo "[Info] Moved gh-auto to $DESIRED_ROOT"
+  else
+    echo "[Warn] Leaving gh-auto at $CURRENT_ROOT; GH_AUTO_ROOT will point there."
+    GH_AUTO_ROOT="$CURRENT_ROOT"
+    GH_AUTO_BIN="$GH_AUTO_ROOT"
+    ENV_LINE="source $GH_AUTO_ROOT/gh-env.sh"
+  fi
 fi
 
 # Ensure env file exists
@@ -40,7 +57,7 @@ fi
 
 # Symlink helpers into ~/bin for convenience
 mkdir -p "$HOME/bin"
-for f in gh-bootstrap.sh gh-list.sh gh-ada-init.sh; do
+for f in gh-bootstrap.sh gh-list.sh gh-ada-init.sh gh-gh-boot.sh gh-installer.sh gh-env.sh; do
   src="$GH_AUTO_ROOT/$f"
   dest="$HOME/bin/${f%.sh}"
   ln -snf "$src" "$dest"
