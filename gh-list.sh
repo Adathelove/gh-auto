@@ -5,9 +5,11 @@
 set -euo pipefail
 
 owner="Adathelove"
+NO_FZF=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --owner) owner="${2:-}"; shift 2;;
+    --no-fzf) NO_FZF=1; shift;;
     *) echo "[Warn] Unknown arg $1" >&2; shift;;
   esac
 done
@@ -15,15 +17,20 @@ done
 echo "[Info] Using owner: $owner"
 
 # Fetch list
-if ! command -v fzf >/dev/null 2>&1; then
-  echo "[Fail] fzf is required." >&2; exit 1
-fi
 list=$(gh repo list "$owner" --limit 200 --json name,visibility,url,description --jq '.[] | "\(.name)\t\(.visibility)\t\(.url)\t\(.description // "")"')
 if [[ -z "$list" ]]; then
   echo "[Warn] No repos returned for $owner"; exit 0
 fi
-choice=$(printf '%s
-' "$list" | fzf --with-nth=1 --prompt="repo> " --header="Select repo to clone/pull") || exit 0
+
+if (( NO_FZF )); then
+  printf '%s\n' "$list"
+  exit 0
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "[Fail] fzf is required (or use --no-fzf)." >&2; exit 1
+fi
+choice=$(printf '%s\n' "$list" | fzf --with-nth=1 --prompt="repo> " --header="Select repo to clone/pull") || exit 0
 repo=$(printf '%s' "$choice" | awk -F'\t' '{print $1}')
 url=$(printf '%s' "$choice" | awk -F'\t' '{print $3}')
 
