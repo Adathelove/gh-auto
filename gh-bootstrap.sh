@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # gh-bootstrap.sh — initialize a directory as a git repo and (optionally) create/push a GitHub repo.
-# Usage: gh-bootstrap.sh [PATH] [--owner OWNER] [--name NAME] [--persona PERSONA] [--symlink]
+# Usage: gh-bootstrap.sh [PATH] [--owner OWNER]
 # - PATH: target directory (default: current directory)
 # - OWNER: GitHub owner (default: gh auth user or inferred from origin)
-# - NAME: repo name (default: basename of PATH)
-# - PERSONA: persona to symlink under <persona>/repos/ (optional)
-# - --symlink: create the symlink if persona provided
+#   (Repo name is always the basename of PATH.)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,25 +17,19 @@ fi
 
 TARGET="${1:-$PWD}"
 OWNER=""
-NAME=""
-PERSONA=""
-DO_SYMLINK=0
 DRY_RUN=0
 
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --owner) OWNER="${2:-}"; shift 2 ;;
-    --name) NAME="${2:-}"; shift 2 ;;
-    --persona) PERSONA="${2:-}"; shift 2 ;;
-    --symlink) DO_SYMLINK=1; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "[Warn] Unknown arg $1" >&2; shift ;;
   esac
 done
 
 TARGET="$(cd "$TARGET" && pwd)"
-[[ -n "$NAME" ]] || NAME="$(basename "$TARGET")"
+NAME="$(basename "$TARGET")"
 
 # Detect owner (gh auth -> target origin -> repo root origin -> git configs)
 if [[ -z "$OWNER" ]]; then
