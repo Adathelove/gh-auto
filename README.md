@@ -30,6 +30,7 @@ gh-bootstrap.sh --help
   - Owner defaults to your active `gh auth` account (Adathelove)
   - `--bare-new NAME` creates a subdir, seeds README + BSD-3, commits, then creates/pushes the repo
   - `--dry-run` prints actions only
+  - Clone helper: `gh-clone-select.sh [--owner NAME] [--here] [--proto ssh|https]` (fzf or prompt)
 
 Underlying engine:
 - `gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`

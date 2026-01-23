@@ -14,6 +14,7 @@ gh-installer.sh
 gh-list.sh
 gh-repo-owner.sh
 gh-env.sh
+gh-clone-select.sh
 "
 
 _gh_auto_complete() {
@@ -33,7 +34,7 @@ _gh_auto_complete() {
   return 0
 }
 
-complete -F _gh_auto_complete gh-new-public.sh gh-new-private.sh gh-bootstrap.sh
+complete -F _gh_auto_complete gh-new-public.sh gh-new-private.sh gh-bootstrap.sh gh-clone-select.sh
 
 # restore errexit if it was set
 [[ -n $_gh_auto_restore_e ]] && set -e
