@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # gh-clone-select.sh
 # Interactively pick one of your GitHub repos and clone it.
-# Default destination: ~/repos/github/<owner>/<repo>
+# Default destination: ~/repos/git/<owner>/<repo>
 # Options:
 #   --owner NAME    Override owner (default: gh auth user)
 #   --here          Clone into current directory (./<repo>)
@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       cat <<EOF
 Usage: gh-clone-select.sh [--owner NAME] [--here] [--proto ssh|https]
-Default destination: ~/repos/github/<owner>/<repo>
+Default destination: ~/repos/git/<owner>/<repo>
 EOF
       exit 0 ;;
     *) shift ;;
@@ -94,7 +94,7 @@ fi
 if [[ $here -eq 1 ]]; then
   dest="$PWD/$repo_name"
 else
-  base="${CLONE_BASE:-$HOME/repos/github/$owner}"
+  base="${CLONE_BASE:-$HOME/repos/git/$owner}"
   mkdir -p "$base"
   dest="$base/$repo_name"
 fi
