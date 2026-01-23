@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # gh-bootstrap.sh — initialize a directory as a git repo and (optionally) create/push a GitHub repo.
-# Usage: gh-bootstrap.sh [PATH] [--owner OWNER]
+# Usage: gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run] [--help]
 # - PATH: target directory (default: current directory)
 # - OWNER: GitHub owner (default: gh auth user or inferred from origin)
-#   (Repo name is always the basename of PATH.)
+# - --bare-new NAME: create subdir NAME under PATH (or $PWD), seed README + BSD-3, commit
+# - --dry-run: show what would happen
+#   Repo name is always the basename of PATH (after applying --bare-new).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,20 +17,34 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
+# Help
+usage() {
+  cat <<EOF
+Usage: gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]
+Repo name defaults to basename of PATH (or of --bare-new). Visibility: public unless GHB_MODE=private.
+EOF
+}
+
 TARGET="${1:-$PWD}"
 OWNER=""
 DRY_RUN=0
+BARE_NEW=""
 
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --owner) OWNER="${2:-}"; shift 2 ;;
+    --bare-new) BARE_NEW="${2:-}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
+    -h|--help) usage; exit 0 ;;
     *) echo "[Warn] Unknown arg $1" >&2; shift ;;
   esac
 done
 
 TARGET="$(cd "$TARGET" && pwd)"
+if [[ -n "$BARE_NEW" ]]; then
+  TARGET="$TARGET/$BARE_NEW"
+fi
 NAME="$(basename "$TARGET")"
 
 # Detect owner (gh auth -> target origin -> repo root origin -> git configs)
@@ -66,6 +82,12 @@ echo "[Info] Repo name: $NAME"
 echo "[Info] GitHub owner: $OWNER"
 [[ $DRY_RUN -eq 1 ]] && echo "[Info] DRY RUN: no changes will be made."
 
+# Fail fast if remote already exists
+if gh repo view "$OWNER/$NAME" >/dev/null 2>&1; then
+  echo "[Fail] Remote https://github.com/$OWNER/$NAME already exists. Aborting." >&2
+  exit 1
+fi
+
 # Helpers
 maybe_do() {
   local msg="$1"; shift
@@ -92,6 +114,53 @@ else
     echo "[Info] Initializing git repo."
     git -C "$TARGET" init -q
   fi
+fi
+
+# Seed for bare-new
+if [[ -n "$BARE_NEW" && $DRY_RUN -eq 0 ]]; then
+  cat > "$TARGET/README.md" <<EOF
+# $NAME
+EOF
+  cat > "$TARGET/LICENSE" <<'EOF'
+BSD 3-Clause License
+
+Copyright (c) 2026, Adathelove
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+EOF
+  git -C "$TARGET" add README.md LICENSE
+  git -C "$TARGET" commit -qm "chore: bootstrap $NAME with README and BSD-3 license"
+fi
+
+# Ensure at least one commit
+if [[ $DRY_RUN -eq 0 ]] && ! git -C "$TARGET" rev-parse --quiet --verify HEAD >/dev/null; then
+  [[ -f "$TARGET/README.md" ]] || echo "# $NAME" > "$TARGET/README.md"
+  git -C "$TARGET" add .
+  git -C "$TARGET" commit -qm "chore: bootstrap $NAME"
 fi
 
 # Check remote / upstream status
