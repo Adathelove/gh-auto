@@ -33,8 +33,28 @@ BARE_NEW=""
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --owner) OWNER="${2:-}"; shift 2 ;;
-    --bare-new) BARE_NEW="${2:-}"; shift 2 ;;
+    --owner|--owner=*)
+      if [[ "$1" == --owner=* ]]; then
+        OWNER="${1#--owner=}"
+        shift
+      else
+        if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+          echo "[Fail] --owner requires a value" >&2; exit 1
+        fi
+        OWNER="$2"; shift 2
+      fi
+      ;;
+    --bare-new|--bare-new=*)
+      if [[ "$1" == --bare-new=* ]]; then
+        BARE_NEW="${1#--bare-new=}"
+        shift
+      else
+        if [[ -z "${2:-}" || "${2:-}" == --* ]]; then
+          echo "[Fail] --bare-new requires a value" >&2; exit 1
+        fi
+        BARE_NEW="$2"; shift 2
+      fi
+      ;;
     --dry-run) DRY_RUN=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "[Warn] Unknown arg $1" >&2; shift ;;
