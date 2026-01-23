@@ -82,6 +82,12 @@ echo "[Info] Repo name: $NAME"
 echo "[Info] GitHub owner: $OWNER"
 [[ $DRY_RUN -eq 1 ]] && echo "[Info] DRY RUN: no changes will be made."
 
+# visibility flag (public default, private if GHB_MODE=private)
+VIS_FLAG="--public"
+if [[ "${GHB_MODE:-public}" == "private" ]]; then
+  VIS_FLAG="--private"
+fi
+
 # Fail fast if remote already exists
 if gh repo view "$OWNER/$NAME" >/dev/null 2>&1; then
   echo "[Fail] Remote https://github.com/$OWNER/$NAME already exists. Aborting." >&2
@@ -193,9 +199,9 @@ if [[ -z "$remote_url" ]]; then
   read -rp "Create GitHub repo $OWNER/$NAME and push? [y/N]: " ans
   if [[ "$ans" =~ ^[Yy]$ ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then
-      echo "[DRY-RUN] Would run: gh repo create $OWNER/$NAME --public --source $TARGET --remote origin --push"
+      echo "[DRY-RUN] Would run: gh repo create $OWNER/$NAME $VIS_FLAG --source $TARGET --remote origin --push"
     else
-      gh repo create "$OWNER/$NAME" --public --source "$TARGET" --remote=origin --push
+      gh repo create "$OWNER/$NAME" "$VIS_FLAG" --source "$TARGET" --remote=origin --push
       echo "[Info] Created and pushed to https://github.com/$OWNER/$NAME"
     fi
   else
@@ -228,28 +234,11 @@ else
     read -rp "Create it now and push? [y/N]: " create_ans
     if [[ "$create_ans" =~ ^[Yy]$ ]]; then
       if [[ $DRY_RUN -eq 1 ]]; then
-        echo "[DRY-RUN] Would run: gh repo create $OWNER/$NAME --public --source $TARGET --remote origin --push"
+        echo "[DRY-RUN] Would run: gh repo create $OWNER/$NAME $VIS_FLAG --source $TARGET --remote origin --push"
       else
-        gh repo create "$OWNER/$NAME" --public --source "$TARGET" --remote=origin --push
+        gh repo create "$OWNER/$NAME" "$VIS_FLAG" --source "$TARGET" --remote=origin --push
         echo "[Info] Created and pushed to https://github.com/$OWNER/$NAME"
       fi
-    fi
-  fi
-fi
-
-# Symlink into persona if requested
-if [[ -n "$PERSONA" && $DO_SYMLINK -eq 1 ]]; then
-  link_dir="$REPO_ROOT/$PERSONA/repos"
-  if [[ ! -d "$REPO_ROOT/$PERSONA" ]]; then
-    echo "[Warn] Persona path not found at $REPO_ROOT/$PERSONA; skipping symlink."
-  else
-    if [[ $DRY_RUN -eq 1 ]]; then
-      echo "[DRY-RUN] Would ensure dir: $link_dir"
-      echo "[DRY-RUN] Would symlink $TARGET -> $link_dir/$NAME"
-    else
-      mkdir -p "$link_dir"
-      ln -snf "$TARGET" "$link_dir/$NAME"
-      echo "[Info] Symlinked $TARGET -> $link_dir/$NAME"
     fi
   fi
 fi

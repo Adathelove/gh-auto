@@ -1,7 +1,7 @@
 # gh-auto
 
 Lightweight Bash helpers for bootstrapping GitHub repos. Chaos owns this toolchain; it lives at
-`~/repos/git/mythos/Chaos/repos/gh-auto` (with an optional symlink at `~/repos/git/adathelove/gh-auto`).
+`~/repos/git/mythos/Chaos/repos/gh-auto`.
 
 ## Quick start
 
@@ -12,7 +12,7 @@ bash gh-gh-boot.sh
 
 2) Add gh-auto to PATH (one time):
 ```bash
-echo 'source ~/repos/git/mythos/Chaos/repos/gh-auto/gh-env' >> ~/.zshrc   # or ~/.bash_profile
+echo 'source ~/repos/git/mythos/Chaos/repos/gh-auto/gh-env.sh' >> ~/.zshrc   # or ~/.bash_profile
 source ~/.zshrc
 ```
 
@@ -24,17 +24,16 @@ gh-bootstrap.sh --help
 
 ## Core commands
 
-**TODO - Missing files:**
-- `gh-new-public.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` ⚠️ NOT YET IMPLEMENTED
-- `gh-new-private.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` ⚠️ NOT YET IMPLEMENTED
+- `gh-new-public.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
+- `gh-new-private.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
   - Repo name = basename of PATH (or NAME when using `--bare-new`)
   - Owner defaults to your active `gh auth` account (Adathelove)
   - `--bare-new NAME` creates a subdir, seeds README + BSD-3, commits, then creates/pushes the repo
   - `--dry-run` prints actions only
-  - **Note**: `gh-bootstrap.sh` has visibility hardcoded as `--public`; GHB_MODE environment variable not yet implemented
 
-**Available now:**
-- `gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` (currently hardcoded to public repos only)
+Underlying engine:
+- `gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
+  - Visibility is controlled by env var `GHB_MODE` (`public` default, `private` honored by the wrappers).
 - `gh-list.sh [--owner OWNER] [--no-fzf]` browse/select your GitHub repos with fzf
 - `gh-repo-owner.sh` detect GitHub owner from various sources
 - `gh-env` adds gh-auto to PATH and loads completions
@@ -44,6 +43,13 @@ gh-bootstrap.sh --help
 Bootstrap the current directory (public):
 ```bash
 gh-bootstrap.sh
+```
+
+Bootstrap the current directory as private:
+```bash
+GHB_MODE=private gh-bootstrap.sh
+# or use the wrapper:
+gh-new-private.sh
 ```
 
 Create a fresh repo in a new subdir (public):

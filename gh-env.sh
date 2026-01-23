@@ -1,5 +1,5 @@
 # gh-env.sh — add gh-auto scripts to PATH and completions (source from bash/zsh profile)
-GH_AUTO_ROOT="${GH_AUTO_ROOT:-$HOME/repos/git/adathelove/gh-auto}"
+GH_AUTO_ROOT="${GH_AUTO_ROOT:-$HOME/repos/git/mythos/Chaos/repos/gh-auto}"
 GH_AUTO_BIN="$GH_AUTO_ROOT"
 if [[ -d "$GH_AUTO_BIN" ]] && [[ ":$PATH:" != *":$GH_AUTO_BIN:"* ]]; then
   export PATH="$GH_AUTO_BIN:$PATH"
