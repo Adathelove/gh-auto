@@ -84,7 +84,7 @@ fi
 
 # Symlink helpers into ~/bin for convenience
 mkdir -p "$HOME/bin"
-for f in gh-bootstrap.sh gh-list.sh gh-ada-init.sh gh-gh-boot.sh gh-installer.sh gh-env.sh gh-new-public.sh gh-new-private.sh gh-repo-owner.sh; do
+for f in gh-bootstrap.sh gh-list.sh gh-ada-init.sh gh-gh-boot.sh gh-installer.sh gh-env.sh gh-new-public.sh gh-new-private.sh gh-repo-owner.sh gh-clone-select.sh; do
   src="$GH_AUTO_ROOT/$f"
   dest="$HOME/bin/${f%.sh}"
   ln -snf "$src" "$dest"
