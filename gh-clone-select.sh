@@ -106,4 +106,19 @@ fi
 
 echo "[Info] Cloning $clone_url -> $dest"
 git clone "$clone_url" "$dest"
+
+# Register symlink in local registry (optional)
+registry_base="${REPO_REGISTRY:-$HOME/repos/git/adathelove}"
+if [[ -w "$(dirname "$registry_base")" ]]; then
+  mkdir -p "$registry_base"
+  reg_link="$registry_base/$repo_name"
+  if [[ -e "$reg_link" && ! -L "$reg_link" ]]; then
+    echo "[Warn] Registry path exists and is not a symlink: $reg_link"
+  else
+    ln -snf "$dest" "$reg_link"
+    echo "[Info] Registered symlink: $reg_link -> $dest"
+  fi
+else
+  echo "[Warn] Registry base not writable; skipped symlink. Set REPO_REGISTRY to override."
+fi
 echo "[Done] Clone complete."

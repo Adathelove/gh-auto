@@ -30,7 +30,9 @@ gh-bootstrap.sh --help
   - Owner defaults to your active `gh auth` account (Adathelove)
   - `--bare-new NAME` creates a subdir, seeds README + BSD-3, commits, then creates/pushes the repo
   - `--dry-run` prints actions only
-  - Clone helper: `gh-clone-select.sh [--owner NAME] [--here] [--proto ssh|https]` (fzf or prompt)
+  - Clone helper: `gh-clone-select.sh [--owner NAME] [--here] [--proto ssh|https]` (fzf or prompt; auto-registers symlink in `~/repos/git/adathelove`)
+  - Registry helper: `repo-register.sh [PATH]` (symlink current/target repo into registry)
+  - Locate DB refresh: `repos-locate-refresh.sh` (macOS locate.updatedb with YES prompt)
 
 Underlying engine:
 - `gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
