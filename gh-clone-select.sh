@@ -31,6 +31,12 @@ EOF
 done
 
 if [[ -z "$owner" ]]; then
+  # Special case: deduce owner from repos/git/<owner>/ path structure
+  if [[ "$PWD" =~ /repos/git/([^/]+) ]]; then
+    owner="${BASH_REMATCH[1]}"
+  fi
+fi
+if [[ -z "$owner" ]]; then
   owner="$(gh auth status 2>/dev/null | awk '/github.com as/{print $NF; exit}')"
 fi
 if [[ -z "$owner" ]]; then
