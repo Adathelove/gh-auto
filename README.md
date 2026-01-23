@@ -18,43 +18,47 @@ source ~/.zshrc
 
 3) Verify:
 ```bash
-which gh-new-public.sh
-gh-new-public.sh --help
+which gh-bootstrap.sh
+gh-bootstrap.sh --help
 ```
 
 ## Core commands
 
-- `gh-new-public.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
-- `gh-new-private.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]`
+**TODO - Missing files:**
+- `gh-new-public.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` ⚠️ NOT YET IMPLEMENTED
+- `gh-new-private.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` ⚠️ NOT YET IMPLEMENTED
   - Repo name = basename of PATH (or NAME when using `--bare-new`)
   - Owner defaults to your active `gh auth` account (Adathelove)
   - `--bare-new NAME` creates a subdir, seeds README + BSD-3, commits, then creates/pushes the repo
   - `--dry-run` prints actions only
+  - **Note**: `gh-bootstrap.sh` has visibility hardcoded as `--public`; GHB_MODE environment variable not yet implemented
 
-- `gh-bootstrap.sh` (used by the wrappers; same options)
-- `gh-list.sh` browse/select your GitHub repos with fzf
+**Available now:**
+- `gh-bootstrap.sh [PATH] [--owner OWNER] [--bare-new NAME] [--dry-run]` (currently hardcoded to public repos only)
+- `gh-list.sh [--owner OWNER] [--no-fzf]` browse/select your GitHub repos with fzf
+- `gh-repo-owner.sh` detect GitHub owner from various sources
 - `gh-env` adds gh-auto to PATH and loads completions
 
 ## Common flows
 
 Bootstrap the current directory (public):
 ```bash
-gh-new-public.sh
+gh-bootstrap.sh
 ```
 
 Create a fresh repo in a new subdir (public):
 ```bash
-gh-new-public.sh --bare-new my-new-repo
+gh-bootstrap.sh --bare-new my-new-repo
 ```
 
-Private bootstrap of an existing dir:
+Bootstrap an existing dir:
 ```bash
-gh-new-private.sh /path/to/dir
+gh-bootstrap.sh /path/to/dir
 ```
 
 Dry run to see what would happen:
 ```bash
-gh-new-public.sh --dry-run
+gh-bootstrap.sh --dry-run
 ```
 
 ## Prereqs
